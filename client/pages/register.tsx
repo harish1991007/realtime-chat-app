@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Layout from "./components/Layout";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -32,6 +33,7 @@ export default function Register() {
   };
 
   return (
+    <Layout>
     <div style={{
       height: "100vh",
       display: "flex",
@@ -107,5 +109,6 @@ export default function Register() {
         </p>
       </div>
     </div>
+    </Layout>
   );
 }

@@ -17,8 +17,9 @@ const io = new Server(server, {
   cors: { origin: "*" }
 });
 
-mongoose.connect("mongodb://127.0.0.1:27017/chat-app");
-
+mongoose.connect("mongodb://127.0.0.1:27017/chat-app")
+  .then(() => console.log("----------------✅ MongoDB Connected"))
+  .catch((err) => console.log("----------------------❌ DB Error:", err));
 // ================= USERS =================
 // import { User } from "./models/User";
 // import { Message } from "./models/Message";
@@ -38,12 +39,7 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  console.log("----------------Incoming1:", username);
-  console.log("----------------Incoming2:", password);
-  console.log("----------------Incoming3:", req.body);
-
   const user = await User.findOne({ username });
-  console.log("----------------Incoming:", user);
   if (!user) return res.status(400).send("User not found");
 
   const valid = await bcrypt.compare(password, user.password);
@@ -58,7 +54,24 @@ app.post("/login", async (req, res) => {
 //   res.json(users);
 // });
 
+app.get("/messages/:user1/:user2", async (req, res) => {
+  try {
+    console.log('--------------------1messages');
+    const { user1, user2 } = req.params;
 
+    const messages = await Message.find({
+      $or: [
+        { sender: user1, receiver: user2 },
+        { sender: user2, receiver: user1 }
+      ]
+    }).sort({ createdAt: 1 });
+    console.log('--------------------2messages', messages);
+
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load messages" });
+  }
+});
 app.use(express.json());
 
 // ✅ USERS
@@ -86,66 +99,55 @@ app.get("/user/:id", async (req, res) => {
   }
 });
 
-
-// ================= SOCKET =================
-// const onlineUsers: any = {};
-
-// io.on("connection", (socket) => {
-//   console.log("Connected:", socket.id);
-
-//   socket.on("join", (userId) => {
-//     onlineUsers[userId] = socket.id;
-//     io.emit("online-users", Object.keys(onlineUsers));
-//   });
-
-//   socket.on("send-message", async ({ sender, receiver, content }) => {
-//     const message = await Message.create({ sender, receiver, content });
-
-//     const receiverSocket = onlineUsers[receiver];
-//     if (receiverSocket) {
-//       io.to(receiverSocket).emit("receive-message", message);
-//     }
-//   });
-
-//   socket.on("disconnect", () => {
-//     console.log("Disconnected");
-//   });
-// });
-
-
 const onlineUsers: any = {};
 
 io.on("connection", (socket) => {
-  console.log("Connected:", socket.id);
+  console.log("------------------User connected:", socket.id);
+  console.log("---------------------🔥 New socket connected:", socket.id);
 
-  // ✅ user joins
+  socket.onAny((event, ...args) => {
+    console.log("-----------------📩 Event:", event, args);
+  });
   socket.on("join", (userId) => {
+    socket.join(userId);
     onlineUsers[userId] = socket.id;
 
     io.emit("online_users", Object.keys(onlineUsers));
   });
 
-  // ✅ private message
-  socket.on("send_message", (data) => {
-    const { sender, receiver, message } = data;
-
-    const receiverSocket = onlineUsers[receiver];
-
-    if (receiverSocket) {
-      io.to(receiverSocket).emit("receive_message", data);
-    }
-  });
-
-  // ✅ disconnect
   socket.on("disconnect", () => {
-    for (let userId in onlineUsers) {
-      if (onlineUsers[userId] === socket.id) {
-        delete onlineUsers[userId];
+    for (let id in onlineUsers) {
+      if (onlineUsers[id] === socket.id) {
+        delete onlineUsers[id];
       }
     }
-
     io.emit("online_users", Object.keys(onlineUsers));
   });
+
+  // 🔥 FIXED MESSAGE HANDLER
+  socket.on("send_message", async (data) => {
+    console.log('--------------------1data', data);
+
+    try {
+      // ✅ SAVE MESSAGE
+      const saved = await Message.create({
+        sender: data.sender,
+        receiver: data.receiver,
+        message: data.message
+      });
+      console.log('--------------------1saved', saved);
+
+      // ✅ SEND TO RECEIVER ROOM
+      io.to(data.receiver).emit("receive_message", saved);
+
+      // ✅ SEND BACK TO SENDER
+      io.to(data.sender).emit("receive_message", saved);
+
+    } catch (err) {
+      console.log("Message save error:", err);
+    }
+  });
 });
+
 
 server.listen(5000, () => console.log("Server running on 5000"));

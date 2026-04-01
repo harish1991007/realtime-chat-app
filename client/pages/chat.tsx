@@ -12,12 +12,12 @@ export default function Chat() {
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [me, setMe] = useState<any>(null);
 
-  // ✅ Protect route + join socket
+  // ✅ INIT USER
   useEffect(() => {
     const id = localStorage.getItem("userId");
 
     if (!id) {
-      window.location.href = "/"; // 🔥 redirect if not logged in
+      window.location.href = "/";
       return;
     }
 
@@ -25,79 +25,113 @@ export default function Chat() {
     socket.emit("join", id);
   }, []);
 
-  // ✅ Fetch users
+  // ✅ LOAD USERS
   useEffect(() => {
     fetch("http://localhost:5000/users")
       .then((res) => res.text())
       .then((text) => {
         try {
           const data = JSON.parse(text);
-
           const id = localStorage.getItem("userId");
-          const filtered = data.filter((u: any) => u._id !== id);
-
-          setUsers(filtered);
-        } catch (err) {
+          setUsers(data.filter((u: any) => u._id !== id));
+        } catch {
           console.error("Users API error:", text);
         }
       });
   }, []);
 
-  // ✅ Fetch my profile
+  // ✅ LOAD MY PROFILE
   useEffect(() => {
     const id = localStorage.getItem("userId");
     if (!id) return;
 
     fetch(`http://localhost:5000/user/${id}`)
-      .then((res) => res.text())
-      .then((text) => {
-        try {
-          const data = JSON.parse(text);
-          setMe(data);
-        } catch (err) {
-          console.error("Profile API error:", text);
-        }
-      });
+      .then((res) => res.json())
+      .then(setMe);
   }, []);
 
-  // ✅ Socket listeners
+  // ✅ SOCKET LISTENERS
   useEffect(() => {
+    const id = localStorage.getItem("userId");
+
     socket.on("receive_message", (data) => {
       setMessages((prev) => [...prev, data]);
     });
-
     socket.on("online_users", (users) => {
       setOnlineUsers(users);
     });
+    socket.on("connect", () => {
+      console.log("✅ Connected:", socket.id);
+
+      if (id) {
+        socket.emit("join", id);
+        console.log("✅ Joined room:", id);
+      }
+    });
 
     return () => {
-      socket.off("receive_message");
-      socket.off("online_users");
+      socket.off("connect");
     };
   }, []);
 
-  // ✅ Send message
-  const sendMessage = () => {
-    if (!msg || !selectedUser || !userId) return;
 
+  // ✅ LOAD CHAT HISTORY
+  const loadMessages = async (receiverId: string) => {
+    const id = localStorage.getItem("userId");
+    if (!id) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/messages/${id}/${receiverId}`
+      );
+
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setMessages(data);
+      } else {
+        setMessages([]);
+      }
+    } catch (err) {
+      console.log("Load message error:", err);
+    }
+  };
+
+  // ✅ SEND MESSAGE
+  const sendMessage = () => {
+    console.log("CLICK SEND", msg, selectedUser, userId);
+
+    if (!msg || !selectedUser || !userId) {
+      console.log("❌ Missing data");
+      return;
+    }
+
+    if (!socket.connected) {
+      console.log("❌ Socket not connected");
+      return;
+    }
+
+    socket.emit("send_message", {
+      sender: userId,
+      receiver: selectedUser._id,
+      message: msg
+    });
     const data = {
       sender: userId,
       receiver: selectedUser._id,
       message: msg
     };
-
-    socket.emit("send_message", data);
-    setMessages((prev) => [...prev, data]);
+    console.log("✅ Message emitted");
+   // setMessages((prev) => [...prev, data]);
     setMsg("");
   };
-
   // ✅ LOGOUT
   const logout = () => {
     localStorage.removeItem("userId");
     window.location.href = "/";
   };
 
-  // ✅ Auto scroll
+  // ✅ AUTO SCROLL
   useEffect(() => {
     const el = document.getElementById("chat-box");
     if (el) el.scrollTop = el.scrollHeight;
@@ -105,7 +139,7 @@ export default function Chat() {
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
-      
+
       {/* 👥 LEFT SIDEBAR */}
       <div style={{
         width: "30%",
@@ -114,19 +148,16 @@ export default function Chat() {
         flexDirection: "column"
       }}>
 
-        {/* 👤 PROFILE HEADER + LOGOUT */}
+        {/* 👤 PROFILE + LOGOUT */}
         <div style={{
           padding: 15,
           background: "#ededed",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          alignItems: "center"
         }}>
           <div style={{ display: "flex", alignItems: "center" }}>
-            <img
-              src="https://i.pravatar.cc/40"
-              style={{ borderRadius: "50%", marginRight: 10 }}
-            />
+            <img src="https://i.pravatar.cc/40" style={{ borderRadius: "50%", marginRight: 10 }} />
             <b>{me?.username || "Loading..."}</b>
           </div>
 
@@ -152,12 +183,12 @@ export default function Chat() {
               key={u._id}
               onClick={() => {
                 setSelectedUser(u);
-                setMessages([]);
+                loadMessages(u._id); // 🔥 LOAD HISTORY
               }}
               style={{
                 padding: 12,
                 cursor: "pointer",
-                borderBottom: "1px solid #f1f1f1",
+                borderBottom: "1px solid #eee",
                 background: selectedUser?._id === u._id ? "#f0f0f0" : "#fff"
               }}
             >
@@ -178,7 +209,7 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* 💬 RIGHT CHAT */}
+      {/* 💬 CHAT AREA */}
       <div style={{ width: "70%", display: "flex", flexDirection: "column" }}>
 
         {/* HEADER */}
@@ -202,7 +233,7 @@ export default function Chat() {
           </div>
         )}
 
-        {/* MESSAGES */}
+        {/* 💬 MESSAGES */}
         <div
           id="chat-box"
           style={{
@@ -252,13 +283,12 @@ export default function Chat() {
             <input
               value={msg}
               onChange={(e) => setMsg(e.target.value)}
-              placeholder="Type a message"
+              placeholder="Type message"
               style={{
                 flex: 1,
                 padding: 10,
                 borderRadius: 20,
-                border: "1px solid #ccc",
-                outline: "none"
+                border: "1px solid #ccc"
               }}
             />
 
