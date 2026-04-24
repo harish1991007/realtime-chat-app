@@ -15,8 +15,10 @@ export default function Chat() {
   // ✅ INIT USER
   useEffect(() => {
     const id = localStorage.getItem("userId");
+      console.log('-------------------------id in');
 
     if (!id) {
+      console.log('-------------------------id not');
       window.location.href = "/";
       return;
     }

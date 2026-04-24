@@ -6,7 +6,8 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-
+import multer from "multer";
+import path from "path";
 
 const app = express();
 app.use(cors());
@@ -49,14 +50,9 @@ app.post("/login", async (req, res) => {
 
   res.json({ token, userId: user._id });
 });
-// app.get("/users", async (req, res) => {
-//   const users = await User.find().select("_id username");
-//   res.json(users);
-// });
 
 app.get("/messages/:user1/:user2", async (req, res) => {
   try {
-    console.log('--------------------1messages');
     const { user1, user2 } = req.params;
 
     const messages = await Message.find({
@@ -65,7 +61,6 @@ app.get("/messages/:user1/:user2", async (req, res) => {
         { sender: user2, receiver: user1 }
       ]
     }).sort({ createdAt: 1 });
-    console.log('--------------------2messages', messages);
 
     res.json(messages);
   } catch (err) {
@@ -74,7 +69,7 @@ app.get("/messages/:user1/:user2", async (req, res) => {
 });
 app.use(express.json());
 
-// ✅ USERS
+//  USERS
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find().select("_id username");
@@ -84,10 +79,10 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// ✅ SINGLE USER
+//  SINGLE USER
 app.get("/user/:id", async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("_id username");
+    const user = await User.findById(req.params.id).select("_id username avatar");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -99,14 +94,53 @@ app.get("/user/:id", async (req, res) => {
   }
 });
 
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
+
+app.put("/update-profile/:id", upload.single("avatar"), async (req, res) => {
+  try {
+    console.log("FILE:", req.file);
+    console.log("BODY:", req.body);
+
+    const { username } = req.body;
+
+    const updateData: any = { username };
+
+    if (req.file) {
+      updateData.avatar = req.file.filename;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    console.log("UPDATED USER:", user);
+
+    res.json(user);
+  } catch (err) {
+    console.log("ERROR:", err);
+    res.status(500).json({ error: "Profile update failed" });
+  }
+});
+
+
 const onlineUsers: any = {};
 
 io.on("connection", (socket) => {
-  console.log("------------------User connected:", socket.id);
-  console.log("---------------------🔥 New socket connected:", socket.id);
 
   socket.onAny((event, ...args) => {
-    console.log("-----------------📩 Event:", event, args);
+    console.log("----------------- Event:", event, args);
   });
   socket.on("join", (userId) => {
     socket.join(userId);
@@ -124,23 +158,21 @@ io.on("connection", (socket) => {
     io.emit("online_users", Object.keys(onlineUsers));
   });
 
-  // 🔥 FIXED MESSAGE HANDLER
+  // FIXED MESSAGE HANDLER
   socket.on("send_message", async (data) => {
-    console.log('--------------------1data', data);
 
     try {
-      // ✅ SAVE MESSAGE
+      // SAVE MESSAGE
       const saved = await Message.create({
         sender: data.sender,
         receiver: data.receiver,
         message: data.message
       });
-      console.log('--------------------1saved', saved);
 
-      // ✅ SEND TO RECEIVER ROOM
+      //  SEND TO RECEIVER ROOM
       io.to(data.receiver).emit("receive_message", saved);
 
-      // ✅ SEND BACK TO SENDER
+      //  SEND BACK TO SENDER
       io.to(data.sender).emit("receive_message", saved);
 
     } catch (err) {
