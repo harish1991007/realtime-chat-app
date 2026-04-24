@@ -29,15 +29,32 @@ mongoose.connect("mongodb://127.0.0.1:27017/chat-app")
 import { User } from "./models/User";
 import { Message } from "./models/Message";
 // ================= AUTH =================
+// app.post("/register", async (req, res) => {
+//   const { username, password } = req.body;
+
+//   const hash = await bcrypt.hash(password, 10);
+//   const user = await User.create({ username, password: hash });
+
+//   res.json(user);
+// });
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
 
-  const hash = await bcrypt.hash(password, 10);
-  const user = await User.create({ username, password: hash });
+  try {
+    const existingUser = await User.findOne({ username });
 
-  res.json(user);
+    if (existingUser) {
+      return res.status(400).send("Username already exists ❌");
+    }
+
+    const user = new User({ username, password });
+    await user.save();
+
+    res.json({ username: user.username });
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
 });
-
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });

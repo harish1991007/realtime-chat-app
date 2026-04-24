@@ -7,6 +7,31 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // const register = async () => {
+  //   if (!username || !password) {
+  //     alert("Enter username & password");
+  //     return;
+  //   }
+
+  //   const res = await fetch("http://localhost:5000/register", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json"
+  //     },
+  //     body: JSON.stringify({ username, password })
+  //   });
+
+  //   const text = await res.text();
+
+  //   try {
+  //     const data = JSON.parse(text);
+  //     alert("User created: " + data.username);
+  //     window.location.href = "/";
+  //   } catch {
+  //     alert(text);
+  //   }
+  // };
+
   const register = async () => {
     if (!username || !password) {
       alert("Enter username & password");
@@ -23,6 +48,11 @@ export default function Register() {
 
     const text = await res.text();
 
+    if (!res.ok) {
+      alert(text); // 👈 shows "Username already exists"
+      return;
+    }
+
     try {
       const data = JSON.parse(text);
       alert("User created: " + data.username);
@@ -31,6 +61,8 @@ export default function Register() {
       alert(text);
     }
   };
+
+
   const inputStyle = {
     width: "100%",
     padding: "14px",
