@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import Layout from "./components/Layout";
+import Link from "next/link";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -108,9 +109,9 @@ export default function Login() {
 
           <p style={{ marginTop: 20 }}>
             Don't have an account?{" "}
-            <a href="/register" style={linkStyle}>
-              Register
-            </a>
+           
+            <Link href="/register" style={navLink}>Register</Link>
+
           </p>
         </div>
 
@@ -158,4 +159,10 @@ const linkStyle = {
   color: "#fff",
   fontWeight: "bold",
   textDecoration: "underline",
+};
+const navLink = {
+  marginRight: 20,
+  color: "#fff",
+  textDecoration: "none",
+  fontWeight: "500",
 };

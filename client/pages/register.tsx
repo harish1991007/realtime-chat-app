@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Layout from "./components/Layout";
+import Link from "next/link";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -145,9 +146,8 @@ export default function Register() {
 
           <p style={{ marginTop: 20 }}>
             Already have an account?{" "}
-            <a href="/" style={linkStyle}>
-              Login
-            </a>
+            <Link href="/login" style={navLink}>Login</Link>
+
           </p>
         </div>
 
@@ -165,3 +165,9 @@ export default function Register() {
     </Layout>
   );
 }
+const navLink = {
+  marginRight: 20,
+  color: "#fff",
+  textDecoration: "none",
+  fontWeight: "500",
+};
