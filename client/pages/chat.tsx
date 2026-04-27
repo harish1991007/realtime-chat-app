@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { socket } from "./lib/socket";
+import Header from "./components/Header";
 
 export default function Chat() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -15,7 +16,7 @@ export default function Chat() {
   // ✅ INIT USER
   useEffect(() => {
     const id = localStorage.getItem("userId");
-      console.log('-------------------------id in');
+    console.log('-------------------------id in');
 
     if (!id) {
       console.log('-------------------------id not');
@@ -124,7 +125,7 @@ export default function Chat() {
       message: msg
     };
     console.log("✅ Message emitted");
-   // setMessages((prev) => [...prev, data]);
+    // setMessages((prev) => [...prev, data]);
     setMsg("");
   };
   // ✅ LOGOUT
@@ -139,7 +140,10 @@ export default function Chat() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
 
-  return (
+  return (<div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+
+    <Header username={me?.username} />
+
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
 
       {/* 👥 LEFT SIDEBAR */}
@@ -159,7 +163,22 @@ export default function Chat() {
           alignItems: "center"
         }}>
           <div style={{ display: "flex", alignItems: "center" }}>
-            <img src="https://i.pravatar.cc/40" style={{ borderRadius: "50%", marginRight: 10 }} />
+            {/* <img src="https://i.pravatar.cc/40" style={{ borderRadius: "50%", marginRight: 10 }} /> */}
+            <img
+              src={
+                me?.avatar
+                  ? `http://localhost:5000/uploads/${me.avatar}?t=${Date.now()}`
+                  : "https://i.pravatar.cc/150"
+              }
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: "50%",
+                marginRight: 10,
+                objectFit: "cover",   // 🔥 important (prevents stretching)
+                border: "2px solid #ddd"
+              }}
+            />
             <b>{me?.username || "Loading..."}</b>
           </div>
 
@@ -196,8 +215,19 @@ export default function Chat() {
             >
               <div style={{ display: "flex", alignItems: "center" }}>
                 <img
-                  src={`https://i.pravatar.cc/40?u=${u._id}`}
-                  style={{ borderRadius: "50%", marginRight: 10 }}
+                  src={
+                    u?.avatar
+                      ? `http://localhost:5000/uploads/${u.avatar}?t=${Date.now()}`
+                      : "https://i.pravatar.cc/150"
+                  }
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: "50%",
+                    marginRight: 10,
+                    objectFit: "cover",   // 🔥 important (prevents stretching)
+                    border: "2px solid #ddd"
+                  }}
                 />
                 <div>
                   <div>{u.username}</div>
@@ -223,9 +253,22 @@ export default function Chat() {
             alignItems: "center"
           }}>
             <img
-              src={`https://i.pravatar.cc/40?u=${selectedUser._id}`}
-              style={{ borderRadius: "50%", marginRight: 10 }}
-            />
+                  src={
+                    selectedUser?.avatar
+                      ? `http://localhost:5000/uploads/${selectedUser.avatar}?t=${Date.now()}`
+                      : "https://i.pravatar.cc/150"
+                  }
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: "50%",
+                    marginRight: 10,
+                    objectFit: "cover",   // 🔥 important (prevents stretching)
+                    border: "2px solid #ddd"
+                  }}
+                />
+
+
             <div>
               <b>{selectedUser.username}</b><br />
               {onlineUsers.includes(selectedUser._id) && (
@@ -312,5 +355,11 @@ export default function Chat() {
         )}
       </div>
     </div>
+  </div>
+
+
+
+
+
   );
 }

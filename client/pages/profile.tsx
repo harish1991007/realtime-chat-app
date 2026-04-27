@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Header from "./components/Header";
 
 export default function Profile() {
   const [user, setUser] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+
   const [username, setUsername] = useState("");
   const [file, setFile] = useState<any>(null);
   const [preview, setPreview] = useState("");
@@ -11,36 +14,36 @@ export default function Profile() {
   const userId =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
-  // Load user
- useEffect(() => {
-  if (!userId) return;
-  fetch(`http://localhost:5000/user/${userId}`)
-    .then((res) => res.json())
-    .then((data) => {
-      setUser(data);
-      setUsername(data.username);
-    });
+  // ✅ Load user
+  useEffect(() => {
+    if (!userId) {
+      window.location.href = "/";
+      return;
+    }
 
-}, [userId]); // IMPORTANT
-if (!user) {
-  return <h2>Loading...</h2>;
-}
+    fetch(`http://localhost:5000/user/${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setUser(data);
+        setUsername(data.username);
+      });
+  }, [userId]);
 
-  // Preview image
+  if (!user) return <p>Loading...</p>;
+
+  // ✅ File preview
   const handleFile = (e: any) => {
     const f = e.target.files[0];
     setFile(f);
     setPreview(URL.createObjectURL(f));
   };
 
-  // Update profile
+  // ✅ Update profile
   const updateProfile = async () => {
     const formData = new FormData();
     formData.append("username", username);
 
-    if (file) {
-      formData.append("avatar", file);
-    }
+    if (file) formData.append("avatar", file);
 
     const res = await fetch(
       `http://localhost:5000/update-profile/${userId}`,
@@ -51,111 +54,160 @@ if (!user) {
     );
 
     const data = await res.json();
-    alert("Profile Updated ✅");
 
     setUser(data);
     setPreview("");
+    setFile(null);
+    setShowModal(false);
+
+    alert("Profile Updated ✅");
   };
 
   return (
-    <div style={styles.container}>
+    <div>
+      <Header username={user.username} />
+
+      {/* PROFILE CARD */}
       <div style={styles.card}>
-        <h2 style={{ marginBottom: 20 }}>My Profile</h2>
-
-        {/* PROFILE IMAGE */}
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <img
-            src={
-                preview
-                ? preview
-                : user?.avatar
-                ? `http://localhost:5000/uploads/${user.avatar}`
-                : "https://i.pravatar.cc/120"
-            }
-            style={styles.avatar}
-            />
-        </div>
-
-        {/* FILE INPUT */}
-        <input type="file" onChange={handleFile} />
-
-        <br /><br />
-
-        {/* USERNAME */}
-        <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-          style={styles.input}
+        <img
+          src={
+            user?.avatar
+              ? `http://localhost:5000/uploads/${user.avatar}`
+              : "https://i.pravatar.cc/150"
+          }
+          style={styles.avatar}
         />
 
-        <br />
+        <h2>{user.username}</h2>
+        <p>User ID: {user._id}</p>
 
-        {/* BUTTON */}
-        <button onClick={updateProfile} style={styles.button}>
-          Update Profile
-        </button>
-
-        <br /><br />
-
-        <button
-          onClick={() => (window.location.href = "/chat")}
-          style={styles.backBtn}
-        >
-          ← Back to Chat
+        <button style={styles.editBtn} onClick={() => setShowModal(true)}>
+          Edit Profile
         </button>
       </div>
+
+      {/* 🔥 MODAL */}
+      {showModal && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h3>Edit Profile</h3>
+
+            {/* IMAGE */}
+            <img
+              src={
+                preview
+                  ? preview
+                  : user?.avatar
+                  ? `http://localhost:5000/uploads/${user.avatar}`
+                  : "https://i.pravatar.cc/120"
+              }
+              style={styles.modalAvatar}
+            />
+
+            <input type="file" onChange={handleFile} />
+
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={styles.input}
+              disabled
+            />
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button style={styles.saveBtn} onClick={updateProfile}>
+                Save
+              </button>
+
+              <button
+                style={styles.cancelBtn}
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 const styles: any = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg, #667eea, #764ba2)"
-  },
   card: {
-    background: "#fff",
-    padding: 30,
-    borderRadius: 15,
-    width: 350,
-    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-    textAlign: "center"
+    maxWidth: 400,
+    margin: "40px auto",
+    padding: 20,
+    textAlign: "center",
+    border: "1px solid #ddd",
+    borderRadius: 10
   },
   avatar: {
     width: 120,
     height: 120,
     borderRadius: "50%",
-    objectFit: "cover",
-    border: "4px solid #667eea"
+    marginBottom: 15,
+    objectFit: "cover"
   },
-  input: {
-    width: "100%",
-    padding: 10,
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    marginBottom: 15
-  },
-  button: {
-    width: "100%",
-    padding: 12,
-    border: "none",
-    borderRadius: 8,
-    background: "#667eea",
+  editBtn: {
+    marginTop: 15,
+    padding: "10px 20px",
+    background: "#25d366",
     color: "#fff",
-    fontWeight: "bold",
+    border: "none",
+    borderRadius: 5,
     cursor: "pointer"
   },
-  backBtn: {
+
+  /* MODAL */
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
     width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  modal: {
+    background: "#fff",
+    padding: 25,
+    borderRadius: 10,
+    width: 320,
+    textAlign: "center"
+  },
+  modalAvatar: {
+    width: 100,
+    height: 100,
+    borderRadius: "50%",
+    marginBottom: 10,
+    objectFit: "cover"
+  },
+  input: {
+    width: "80%",
     padding: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    borderRadius: 6,
+    border: "1px solid #ccc"
+  },
+  saveBtn: {
+    flex: 1,
+    padding: 10,
+    background: "#25d366",
     border: "none",
-    borderRadius: 8,
-    background: "#999",
     color: "#fff",
+    borderRadius: 5,
+    cursor: "pointer"
+  },
+  cancelBtn: {
+    flex: 1,
+    padding: 10,
+    background: "#999",
+    border: "none",
+    color: "#fff",
+    borderRadius: 5,
     cursor: "pointer"
   }
 };

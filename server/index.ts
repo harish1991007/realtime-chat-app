@@ -9,10 +9,15 @@ import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
 
+import fs from "fs";
+
+
+
+
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" }
@@ -89,7 +94,7 @@ app.use(express.json());
 //  USERS
 app.get("/users", async (req, res) => {
   try {
-    const users = await User.find().select("_id username");
+    const users = await User.find().select("_id username avatar");
     res.json(users);
   } catch {
     res.status(500).json({ message: "Server error" });
@@ -123,6 +128,37 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// app.put("/update-profile/:id", upload.single("avatar"), async (req, res) => {
+//   try {
+//     console.log("FILE:", req.file);
+//     console.log("BODY:", req.body);
+
+//     const { username } = req.body;
+
+//     const updateData: any = { username };
+
+//     if (req.file) {
+//       updateData.avatar = req.file.filename;
+//     }
+
+//     const user = await User.findByIdAndUpdate(
+//       req.params.id,
+//       updateData,
+//       { new: true }
+//     );
+
+//     console.log("UPDATED USER:", user);
+
+//     res.json(user);
+//   } catch (err) {
+//     console.log("ERROR:", err);
+//     res.status(500).json({ error: "Profile update failed" });
+//   }
+// });
+
+
+
+
 app.put("/update-profile/:id", upload.single("avatar"), async (req, res) => {
   try {
     console.log("FILE:", req.file);
@@ -130,12 +166,29 @@ app.put("/update-profile/:id", upload.single("avatar"), async (req, res) => {
 
     const { username } = req.body;
 
+    // 🔥 Get existing user first
+    const existingUser = await User.findById(req.params.id);
+
     const updateData: any = { username };
 
     if (req.file) {
       updateData.avatar = req.file.filename;
+
+      // ✅ DELETE OLD IMAGE
+      if (existingUser?.avatar) {
+        const oldPath = path.join(__dirname, "uploads", existingUser.avatar);
+
+        fs.unlink(oldPath, (err) => {
+          if (err) {
+            console.log("Old file delete error:", err.message);
+          } else {
+            console.log("Old file deleted:", existingUser.avatar);
+          }
+        });
+      }
     }
 
+    // ✅ Update user
     const user = await User.findByIdAndUpdate(
       req.params.id,
       updateData,

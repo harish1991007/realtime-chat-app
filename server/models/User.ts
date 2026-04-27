@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  avatar: {
+    type: String, 
+    default: "1775111433737.png"
+  }
 });
 
 export const User = mongoose.model("User", userSchema);
