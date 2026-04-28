@@ -14,38 +14,22 @@ export default function Login() {
       return;
     }
 
+    const res = await fetch("http://localhost:5000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username, password })
+    });
+
+    const text = await res.text();
+
     try {
-      const res = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const text = await res.text();
-
-      try {
-        const data = JSON.parse(text);
-        localStorage.setItem("userId", data.userId);
-        window.location.href = "/chat";
-      } catch {
-        alert(text);
-      }
+      const data = JSON.parse(text);
+      localStorage.setItem("userId", data.userId);
+      window.location.href = "/chat";
     } catch {
-      const res = await fetch("http://10.14.208.226:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const text = await res.text();
-
-      try {
-        const data = JSON.parse(text);
-        localStorage.setItem("userId", data.userId);
-        window.location.href = "/chat";
-      } catch {
-        alert(text);
-      }
+      alert(text);
     }
   };
 
@@ -56,42 +40,23 @@ export default function Login() {
 
   return (
     <Layout>
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          background:
-            "linear-gradient(135deg, #1e3c72, #2a5298, #6a11cb, #2575fc)",
-          backgroundSize: "300% 300%",
-          animation: "gradientMove 10s ease infinite",
-          fontFamily: "Segoe UI, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            width: 360,
-            padding: 35,
-            borderRadius: 20,
-            background: "rgba(255,255,255,0.1)",
-            backdropFilter: "blur(15px)",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
-            color: "#fff",
-            textAlign: "center",
-          }}
-        >
-          <h1 style={{ marginBottom: 10, fontSize: 28 }}>💬 ChatApp</h1>
-          <p style={{ marginBottom: 25, opacity: 0.8 }}>
-            Welcome back! Login to continue
+      <div style={styles.page}>
+        <div style={styles.card}>
+          {/* LOGO */}
+          <div style={styles.logo}>💬</div>
+
+          <h2 style={styles.title}>Welcome Back</h2>
+          <p style={styles.subtitle}>
+            Login to continue chatting
           </p>
 
+          {/* FORM */}
           <form onSubmit={handleSubmit}>
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Username"
-              style={inputStyle}
+              style={styles.input}
             />
 
             <input
@@ -99,23 +64,24 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              style={inputStyle}
+              style={styles.input}
             />
 
-            <button type="submit" style={buttonStyle}>
+            <button type="submit" style={styles.button}>
               Login
             </button>
           </form>
 
-          <p style={{ marginTop: 20 }}>
-            Don't have an account?{" "}
-           
-            <Link href="/register" style={navLink}>Register</Link>
-
+          {/* FOOTER */}
+          <p style={styles.footer}>
+            Don’t have an account?{" "}
+            <Link href="/register" style={styles.link}>
+              Register
+            </Link>
           </p>
         </div>
 
-        {/* Animation */}
+        {/* 🔥 GRADIENT ANIMATION */}
         <style>
           {`
           @keyframes gradientMove {
@@ -130,39 +96,78 @@ export default function Login() {
   );
 }
 
-const inputStyle = {
-  width: "100%",
-  padding: "14px",
-  marginBottom: "15px",
-  borderRadius: "10px",
-  border: "none",
-  outline: "none",
-  background: "rgba(255,255,255,0.2)",
-  color: "#fff",
-  fontSize: "14px",
-};
+const styles: any = {
+  page: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background:
+      "linear-gradient(135deg, #1e3c72, #2a5298, #6a11cb, #2575fc)",
+    backgroundSize: "300% 300%",
+    animation: "gradientMove 10s ease infinite",
+    fontFamily: "Segoe UI, sans-serif"
+  },
 
-const buttonStyle = {
-  width: "100%",
-  padding: "14px",
-  borderRadius: "10px",
-  border: "none",
-  background: "linear-gradient(45deg, #25d366, #128c7e)",
-  color: "#fff",
-  fontWeight: "bold",
-  cursor: "pointer",
-  fontSize: "16px",
-  transition: "0.3s",
-};
+  card: {
+    width: 360,
+    padding: 35,
+    borderRadius: 16,
+    background: "#ffffff",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.25)",
+    textAlign: "center"
+  },
 
-const linkStyle = {
-  color: "#fff",
-  fontWeight: "bold",
-  textDecoration: "underline",
-};
-const navLink = {
-  marginRight: 20,
-  color: "#fff",
-  textDecoration: "none",
-  fontWeight: "500",
+  logo: {
+    fontSize: 42,
+    marginBottom: 10
+  },
+
+  title: {
+    marginBottom: 5,
+    fontSize: 24,
+    fontWeight: 700
+  },
+
+  subtitle: {
+    marginBottom: 25,
+    color: "#666",
+    fontSize: 14
+  },
+
+  input: {
+    width: "100%",
+    padding: 14,
+    marginBottom: 15,
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    fontSize: 14,
+    outline: "none",
+    transition: "0.2s"
+  },
+
+  button: {
+    width: "100%",
+    padding: 14,
+    borderRadius: 10,
+    border: "none",
+    background: "linear-gradient(45deg, #25d366, #128c7e)",
+    color: "#fff",
+    fontWeight: "bold",
+    cursor: "pointer",
+    fontSize: 16,
+    transition: "0.3s"
+  },
+
+  footer: {
+    marginTop: 20,
+    fontSize: 14,
+    color: "#444"
+  },
+
+  link: {
+    color: "#25d366",
+    fontWeight: 600,
+    textDecoration: "none"
+  }
 };

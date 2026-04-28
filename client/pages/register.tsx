@@ -8,31 +8,6 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // const register = async () => {
-  //   if (!username || !password) {
-  //     alert("Enter username & password");
-  //     return;
-  //   }
-
-  //   const res = await fetch("http://localhost:5000/register", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json"
-  //     },
-  //     body: JSON.stringify({ username, password })
-  //   });
-
-  //   const text = await res.text();
-
-  //   try {
-  //     const data = JSON.parse(text);
-  //     alert("User created: " + data.username);
-  //     window.location.href = "/";
-  //   } catch {
-  //     alert(text);
-  //   }
-  // };
-
   const register = async () => {
     if (!username || !password) {
       alert("Enter username & password");
@@ -41,95 +16,40 @@ export default function Register() {
 
     const res = await fetch("http://localhost:5000/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     });
 
     const text = await res.text();
 
     if (!res.ok) {
-      alert(text); // 👈 shows "Username already exists"
+      alert(text);
       return;
     }
 
-    try {
-      const data = JSON.parse(text);
-      alert("User created: " + data.username);
-      window.location.href = "/";
-    } catch {
-      alert(text);
-    }
+    const data = JSON.parse(text);
+    alert("User created: " + data.username);
+    window.location.href = "/";
   };
 
-
-  const inputStyle = {
-    width: "100%",
-    padding: "14px",
-    marginBottom: "15px",
-    borderRadius: "10px",
-    border: "none",
-    outline: "none",
-    background: "rgba(255,255,255,0.2)",
-    color: "#fff",
-    fontSize: "14px",
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "14px",
-    borderRadius: "10px",
-    border: "none",
-    background: "linear-gradient(45deg, #ff7a18, #ff4b2b)",
-    color: "#fff",
-    fontWeight: "bold",
-    cursor: "pointer",
-    fontSize: "16px",
-  };
-
-  const linkStyle = {
-    color: "#fff",
-    fontWeight: "bold",
-    textDecoration: "underline",
-  };
   return (
     <Layout>
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          background:
-            "linear-gradient(135deg, #1e3c72, #2a5298, #6a11cb, #2575fc)",
-          backgroundSize: "300% 300%",
-          animation: "gradientMove 10s ease infinite",
-          fontFamily: "Segoe UI, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            width: 360,
-            padding: 35,
-            borderRadius: 20,
-            background: "rgba(255,255,255,0.1)",
-            backdropFilter: "blur(15px)",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
-            color: "#fff",
-            textAlign: "center",
-          }}
-        >
-          <h1 style={{ marginBottom: 10, fontSize: 28 }}>📝 Create Account</h1>
-          <p style={{ marginBottom: 25, opacity: 0.8 }}>
-            Join ChatApp and start chatting
+      <div style={styles.page}>
+        <div style={styles.card}>
+          {/* LOGO */}
+          <div style={styles.logo}>💬</div>
+
+          <h2 style={styles.title}>Create your account</h2>
+          <p style={styles.subtitle}>
+            Start chatting with your friends instantly
           </p>
 
+          {/* INPUTS */}
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Username"
-            style={inputStyle}
+            style={styles.input}
           />
 
           <input
@@ -137,37 +57,111 @@ export default function Register() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            style={inputStyle}
+            style={styles.input}
           />
 
-          <button onClick={register} style={buttonStyle}>
-            Register
+          {/* BUTTON */}
+          <button style={styles.button} onClick={register}>
+            Create Account
           </button>
 
-          <p style={{ marginTop: 20 }}>
+          {/* FOOTER */}
+          <p style={styles.footer}>
             Already have an account?{" "}
-            <Link href="/login" style={navLink}>Login</Link>
-
+            <Link href="/login" style={styles.link}>
+              Login
+            </Link>
           </p>
         </div>
+      </div>
 
-        {/* Background Animation */}
-        <style>
-          {`
+      {/* 🔥 BACKGROUND ANIMATION */}
+      <style>
+        {`
           @keyframes gradientMove {
             0% { background-position: 0% 50% }
             50% { background-position: 100% 50% }
             100% { background-position: 0% 50% }
           }
         `}
-        </style>
-      </div>
+      </style>
     </Layout>
   );
 }
-const navLink = {
-  marginRight: 20,
-  color: "#fff",
-  textDecoration: "none",
-  fontWeight: "500",
+
+const styles: any = {
+  page: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background:
+      "linear-gradient(135deg, #1e3c72, #2a5298, #6a11cb, #2575fc)",
+    backgroundSize: "300% 300%",
+    animation: "gradientMove 10s ease infinite",
+    fontFamily: "Segoe UI, sans-serif"
+  },
+
+  card: {
+    width: 360,
+    padding: 35,
+    borderRadius: 12,
+    background: "rgba(255,255,255,0.95)",
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+    textAlign: "center"
+  },
+
+  logo: {
+    fontSize: 40,
+    marginBottom: 10
+  },
+
+  title: {
+    marginBottom: 5,
+    fontSize: 22,
+    fontWeight: 600
+  },
+
+  subtitle: {
+    marginBottom: 25,
+    color: "#666",
+    fontSize: 14
+  },
+
+  input: {
+    width: "100%",
+    padding: 12,
+    marginBottom: 15,
+    borderRadius: 8,
+    border: "1px solid #ddd",
+    fontSize: 14,
+    outline: "none"
+  },
+
+  button: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 8,
+    border: "none",
+    background: "#25d366",
+    color: "#fff",
+    fontWeight: 600,
+    cursor: "pointer",
+    fontSize: 15,
+    marginTop: 5,
+    transition: "0.2s"
+  },
+
+  footer: {
+    marginTop: 20,
+    fontSize: 14,
+    color: "#555"
+  },
+
+  link: {
+    color: "#25d366",
+    fontWeight: 600,
+    textDecoration: "none"
+  }
 };
