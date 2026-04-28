@@ -224,6 +224,31 @@ io.on("connection", (socket) => {
 
 });
 
+// 🔐 UPDATE PASSWORD
+app.put("/update-password/:id", async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).send("User not found");
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).send("Current password incorrect ❌");
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    user.password = hash;
+    await user.save();
+
+    res.json({ message: "Password updated ✅" });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Server error");
+  }
+});
 // ================= START =================
 server.listen(5000, () => {
   console.log("🚀 Server running on http://localhost:5000");
