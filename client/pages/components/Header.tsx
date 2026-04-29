@@ -1,13 +1,42 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
-export default function ({  username,  avatar }: { username?: string;  avatar?: string; }) {
+export default function Header({ username, avatar }: any) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const logout = () => {
     localStorage.removeItem("userId");
     router.push("/");
+  };
+
+  const navItem = (label: string, path: string) => {
+    const active = pathname === path;
+
+    return (
+      <span
+        onClick={() => router.push(path)}
+        style={{
+          cursor: "pointer",
+          padding: "6px 12px",
+          borderRadius: 6,
+          fontSize: 14,
+          transition: "0.2s",
+          background: active ? "#2a3942" : "transparent",
+          color: active ? "#25d366" : "#ccc",
+          fontWeight: active ? 600 : 400
+        }}
+        onMouseEnter={(e) => {
+          if (!active) e.currentTarget.style.background = "#2a3942";
+        }}
+        onMouseLeave={(e) => {
+          if (!active) e.currentTarget.style.background = "transparent";
+        }}
+      >
+        {label}
+      </span>
+    );
   };
 
   return (
@@ -32,22 +61,11 @@ export default function ({  username,  avatar }: { username?: string;  avatar?: 
       </div>
 
       {/* RIGHT */}
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        
-        {/* NAV */}
-        <span
-          onClick={() => router.push("/chat")}
-          style={{ cursor: "pointer", opacity: 0.9 }}
-        >
-          Chat
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
 
-        <span
-          onClick={() => router.push("/profile")}
-          style={{ cursor: "pointer", opacity: 0.9 }}
-        >
-          Profile
-        </span>
+        {/* ✅ NAV ITEMS */}
+        {navItem("Chat", "/chat")}
+        {navItem("Profile", "/profile")}
 
         {/* USER */}
         <div style={{
@@ -85,8 +103,7 @@ export default function ({  username,  avatar }: { username?: string;  avatar?: 
             padding: "6px 12px",
             borderRadius: 6,
             color: "#fff",
-            cursor: "pointer",
-            fontSize: 13
+            cursor: "pointer"
           }}
         >
           Logout
