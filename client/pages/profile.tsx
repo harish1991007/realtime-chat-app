@@ -91,7 +91,7 @@ export default function Profile() {
 
   return (
     <div style={styles.page}>
-      <Header username={user.username} />
+      <Header username={user?.username} avatar={user?.avatar} />
 
       {/* 🔝 TOP BANNER */}
       <div style={styles.topBanner}>

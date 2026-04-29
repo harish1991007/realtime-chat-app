@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-export default function Header({ username }: { username?: string }) {
+export default function ({  username,  avatar }: { username?: string;  avatar?: string; }) {
   const router = useRouter();
 
   const logout = () => {
@@ -19,37 +19,74 @@ export default function Header({ username }: { username?: string }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 20px"
+        padding: "0 20px",
+        borderBottom: "1px solid #111b21"
       }}
     >
-      {/* LEFT LOGO */}
-      <div style={{ fontSize: 18, fontWeight: "bold" }}>
-        💬 MyChat App
+      {/* LEFT */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ fontSize: 22 }}>💬</div>
+        <div style={{ fontSize: 18, fontWeight: 600 }}>
+          MyChat
+        </div>
       </div>
 
-      {/* RIGHT MENU */}
-      <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-        <span style={{ cursor: "pointer" }} onClick={() => router.push("/chat")}>
+      {/* RIGHT */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        
+        {/* NAV */}
+        <span
+          onClick={() => router.push("/chat")}
+          style={{ cursor: "pointer", opacity: 0.9 }}
+        >
           Chat
         </span>
 
-        <span style={{ cursor: "pointer" }} onClick={() => router.push("/profile")}>
+        <span
+          onClick={() => router.push("/profile")}
+          style={{ cursor: "pointer", opacity: 0.9 }}
+        >
           Profile
         </span>
 
-        <span style={{ fontSize: 14, opacity: 0.8 }}>
-          {username || "User"}
-        </span>
+        {/* USER */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          background: "#2a3942",
+          padding: "5px 10px",
+          borderRadius: 20
+        }}>
+          <img
+            src={
+              avatar
+                ? `http://localhost:5000/uploads/${avatar}?t=${Date.now()}`
+                : "https://i.pravatar.cc/40"
+            }
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              objectFit: "cover"
+            }}
+          />
+          <span style={{ fontSize: 13 }}>
+            {username || "User"}
+          </span>
+        </div>
 
+        {/* LOGOUT */}
         <button
           onClick={logout}
           style={{
             background: "#ff4d4f",
             border: "none",
-            padding: "5px 10px",
-            borderRadius: 5,
+            padding: "6px 12px",
+            borderRadius: 6,
             color: "#fff",
-            cursor: "pointer"
+            cursor: "pointer",
+            fontSize: 13
           }}
         >
           Logout

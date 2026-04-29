@@ -202,9 +202,9 @@ export default function Chat() {
   }, [messages]);
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "94vh", display: "flex", flexDirection: "column" }}>
 
-      <Header username={me?.username} />
+      <Header username={me?.username} avatar={me?.avatar} />
 
       <div style={{ display: "flex", height: "100%" }}>
 
