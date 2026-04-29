@@ -41,7 +41,7 @@ realtime-chat-app/
 └── README.md
 ⚙️ Installation & Setup
 1️⃣ Clone the repository
-git clone https://github.com/your-username/realtime-chat-app.git
+git clone https://github.com/harish1991007/realtime-chat-app.git
 cd realtime-chat-app
 2️⃣ Install dependencies
 Backend
