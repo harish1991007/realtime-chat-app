@@ -18,7 +18,7 @@ export default function Profile() {
   const userId =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
-  // ✅ LOAD USER
+  //  LOAD USER
   useEffect(() => {
     if (!userId) {
       window.location.href = "/";
@@ -35,14 +35,14 @@ export default function Profile() {
 
   if (!user) return <p style={{ textAlign: "center" }}>Loading...</p>;
 
-  // ✅ FILE PREVIEW
+  //  FILE PREVIEW
   const handleFile = (e: any) => {
     const f = e.target.files[0];
     setFile(f);
     setPreview(URL.createObjectURL(f));
   };
 
-  // ✅ UPDATE PROFILE
+  //  UPDATE PROFILE
   const updateProfile = async () => {
     const formData = new FormData();
     formData.append("username", username);
@@ -59,10 +59,10 @@ export default function Profile() {
     setFile(null);
     setShowModal(false);
 
-    alert("Profile Updated ✅");
+    alert("Profile Updated ");
   };
 
-  // 🔐 UPDATE PASSWORD
+  //  UPDATE PASSWORD
   const updatePassword = async () => {
     if (!currentPassword || !newPassword) {
       return alert("Fill all fields");
@@ -80,7 +80,7 @@ export default function Profile() {
     const text = await res.text();
 
     if (res.ok) {
-      alert("Password Updated ✅");
+      alert("Password Updated ");
       setShowPassModal(false);
       setCurrentPassword("");
       setNewPassword("");
@@ -93,7 +93,7 @@ export default function Profile() {
     <div style={styles.page}>
       <Header username={user?.username} avatar={user?.avatar} />
 
-      {/* 🔝 TOP BANNER */}
+      {/*  TOP BANNER */}
       <div style={styles.topBanner}>
         <h1>My Profile</h1>
         <p>Manage your account settings</p>
@@ -148,7 +148,7 @@ export default function Profile() {
         </button>
       </div>
 
-      {/* ✏️ EDIT MODAL */}
+      {/*  EDIT MODAL */}
       {showModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
@@ -184,7 +184,7 @@ export default function Profile() {
         </div>
       )}
 
-      {/* 🔐 PASSWORD MODAL */}
+      {/*  PASSWORD MODAL */}
       {showPassModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>

@@ -16,7 +16,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ FIX PATH (important for TS build)
+// FIX PATH (important for TS build)
 const uploadPath = path.join(__dirname, "uploads");
 app.use("/uploads", express.static(uploadPath));
 
@@ -28,8 +28,8 @@ const io = new Server(server, {
 
 // ================= DB =================
 mongoose.connect("mongodb://127.0.0.1:27017/chat-app")
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ DB Error:", err));
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log("DB Error:", err));
 
 // ================= MULTER =================
 const storage = multer.diskStorage({
@@ -60,7 +60,7 @@ app.post("/register", async (req, res) => {
 
   try {
     const exists = await User.findOne({ username });
-    if (exists) return res.status(400).send("Username exists ❌");
+    if (exists) return res.status(400).send("Username exists ");
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -113,7 +113,7 @@ app.put("/update-profile/:id", upload.single("avatar"), async (req, res) => {
     if (req.file) {
       updateData.avatar = req.file.filename;
 
-      // 🧹 delete old avatar
+      //  delete old avatar
       if (existingUser?.avatar) {
         const oldPath = path.join(uploadPath, existingUser.avatar);
 
@@ -185,7 +185,7 @@ io.on("connection", (socket) => {
     io.emit("online_users", Object.keys(onlineUsers));
   });
 
-  // 💬 SEND MESSAGE
+  // SEND MESSAGE
   socket.on("send_message", async (data: any) => {
     try {
       const saved = await Message.create({
@@ -204,7 +204,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ⌨️ typing
+  // typing
   socket.on("typing", ({ to }) => {
     io.to(to).emit("typing");
   });
@@ -224,7 +224,7 @@ io.on("connection", (socket) => {
 
 });
 
-// 🔐 UPDATE PASSWORD
+// UPDATE PASSWORD
 app.put("/update-password/:id", async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -234,7 +234,7 @@ app.put("/update-password/:id", async (req, res) => {
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).send("Current password incorrect ❌");
+      return res.status(400).send("Current password incorrect ");
     }
 
     const hash = await bcrypt.hash(newPassword, 10);
@@ -242,7 +242,7 @@ app.put("/update-password/:id", async (req, res) => {
     user.password = hash;
     await user.save();
 
-    res.json({ message: "Password updated ✅" });
+    res.json({ message: "Password updated " });
 
   } catch (err) {
     console.log(err);
