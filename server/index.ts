@@ -251,5 +251,5 @@ app.put("/update-password/:id", async (req, res) => {
 });
 // ================= START =================
 server.listen(5000, () => {
-  console.log("🚀 Server running on http://localhost:5000");
+  console.log("Server running on http://localhost:5000");
 });
